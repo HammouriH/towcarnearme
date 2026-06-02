@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TowCarNearMe - أقرب ونش من موقعك</title>
+<meta name="description" content="towcarnearme.online - منصة تربط الزبون بأقرب صاحب ونش جغرافياً. مجاني للزبائن، بلا عمولات.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300..900&family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+:root,[data-theme="light"]{
+--bg:#f5f4f0;--surf:#ffffff;--surfoff:#eeebe4;--surfoff2:#e6e3db;--surfdyn:#dedad0;
+--div:#d4d0c8;--brd:#c8c4bc;--txt:#18160f;--txtm:#65625a;--txtf:#aaa89f;--txti:#f5f4f0;
+--pri:#0d2b5a;--prih:#091e42;--pria:#061430;--prih2:#c4d3eb;
+--acc:#d97600;--acch:#bf6700;--acca:#9e5300;--acch2:#fce5c0;
+--suc:#267036;--such:#cde8d3;--err:#b83224;--errh:#f8d0cc;
+--r-sm:.375rem;--r-md:.5rem;--r-lg:.75rem;--r-xl:1rem;--r-2xl:1.5rem;--r-full:9999px;
+--sh-sm:0 1px 3px rgba(13,43,90,.07);--sh-md:0 4px 16px rgba(13,43,90,.1);
+--sh-lg:0 12px 40px rgba(13,43,90,.13);--sh-xl:0 24px 64px rgba(13,43,90,.17);
+--s1:.25rem;--s2:.5rem;--s3:.75rem;--s4:1rem;--s5:1.25rem;--s6:1.5rem;
+--s8:2rem;--s10:2.5rem;--s12:3rem;--s16:4rem;--s20:5rem;--s24:6rem;
+--xs:clamp(.75rem,.7rem + .25vw,.875rem);--sm:clamp(.875rem,.8rem + .35vw,1rem);
+--base:clamp(1rem,.95rem + .25vw,1.125rem);--lg:clamp(1.125rem,1rem + .75vw,1.5rem);
+--xl:clamp(1.5rem,1.2rem + 1.25vw,2.25rem);--2xl:clamp(2rem,1.2rem + 2.5vw,3.5rem);
+--hero:clamp(2.4rem,.8rem + 5vw,5rem);
+--fnt:"Cairo","Tajawal",sans-serif;--fnb:"Tajawal","Cairo",sans-serif;
+--tr:180ms cubic-bezier(.16,1,.3,1);--cw:1200px;}
+[data-theme="dark"]{
+--bg:#0c0d0f;--surf:#121417;--surfoff:#1b1e24;--surfoff2:#20242c;--surfdyn:#282d38;
+--div:#2a2f3c;--brd:#353c4d;--txt:#dde0e8;--txtm:#858ea2;--txtf:#4c5568;--txti:#0c0d0f;
+--pri:#5585d4;--prih:#3d6cc0;--pria:#2954a8;--prih2:#182848;
+--acc:#f0a020;--acch:#e08f0a;--acca:#c47a00;--acch2:#3a2600;
+--suc:#44a862;--such:#163024;--err:#e56358;--errh:#381818;
+--sh-sm:0 1px 3px rgba(0,0,0,.28);--sh-md:0 4px 16px rgba(0,0,0,.34);
+--sh-lg:0 12px 40px rgba(0,0,0,.42);--sh-xl:0 24px 64px rgba(0,0,0,.5);}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{-webkit-text-size-adjust:none;text-size-adjust:none;-webkit-font-smoothing:antialiased;scroll-behavior:smooth;scroll-padding-top:72px;}
+body{min-height:100dvh;font-family:var(--fnb);font-size:var(--base);color:var(--txt);background:var(--bg);line-height:1.65;direction:rtl;}
+img,svg{display:block;max-width:100%;height:auto;}
+input,button,textarea,select{font:inherit;color:inherit;}
+h1,h2,h3,h4{text-wrap:balance;line-height:1.15;font-family:var(--fnt);}
+button{cursor:pointer;background:none;border:none;}
+a{text-decoration:none;color:inherit;}
+ul{list-style:none;}
+:focus-visible{outline:2px solid var(--acc);outline-offset:3px;border-radius:var(--r-sm);}
+::selection{background:rgba(217,118,0,.18);}
+a,button,[role=button],input,select,textarea{transition:color var(--tr),background var(--tr),border-color var(--tr),box-shadow var(--tr),transform var(--tr),opacity var(--tr);}
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-thumb{background:var(--brd);border-radius:var(--r-full);}
+.cw{max-width:var(--cw);margin-inline:auto;padding-inline:var(--s6);}
+.sec{padding-block:clamp(var(--s12),6vw,var(--s24));}
+/* HEADER */
+.hdr{position:sticky;top:0;z-index:100;background:rgba(245,244,240,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--div);}
+[data-theme="dark"] .hdr{background:rgba(12,13,15,.95);}
+.hdr-in{display:flex;align-items:center;justify-content:space-between;padding-block:var(--s3);}
+.logo{display:flex;align-items:center;gap:var(--s3);font-family:var(--fnt);font-weight:900;color:var(--pri);}
+.logo-text b{display:block;font-size:var(--base);line-height:1.1;}
+.logo-text span{display:block;font-size:var(--xs);font-weight:400;color:var(--txtm);}
+.nav{display:flex;align-items:center;gap:var(--s1);}
+.nl{padding:var(--s2) var(--s4);font-size:var(--sm);font-weight:600;color:var(--txtm);border-radius:var(--r-full);}
+.nl:hover{color:var(--pri);background:var(--surfoff);}
+.hdr-acts{display:flex;align-items:center;gap:var(--s2);}
+.btn-th{padding:var(--s2) var(--s3);border-radius:var(--r-md);color:var(--txtm);display:flex;align-items:center;gap:var(--s1);}
+.btn-th:hover{background:var(--surfoff);color:var(--txt);}
+.hmbgr{display:none;flex-direction:column;gap:5px;padding:var(--s2);border-radius:var(--r-md);min-width:44px;min-height:44px;align-items:center;justify-content:center;}
+.hmbgr span{display:block;width:22px;height:2px;background:var(--txt);border-radius:2px;}
+/* MOBILE MENU */
+.mob-menu{display:none;position:fixed;inset:0;z-index:200;background:var(--surf);padding:var(--s6);flex-direction:column;gap:var(--s3);overflow-y:auto;}
+.mob-menu.open{display:flex;}
+.mob-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--s4);}
+.mob-nl{display:flex;align-items:center;gap:var(--s3);padding:var(--s4);font-size:var(--base);font-weight:700;color:var(--txt);border-radius:var(--r-xl);background:var(--surfoff);min-height:54px;}
+.mob-nl:hover{background:var(--prih2);color:var(--pri);}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--s2);padding:var(--s3) var(--s6);font-size:var(--sm);font-weight:800;font-family:var(--fnb);border-radius:var(--r-full);cursor:pointer;border:none;white-space:nowrap;min-height:44px;}
+.btn-p{background:var(--acc);color:#fff;}
+.btn-p:hover{background:var(--acch);transform:translateY(-1px);box-shadow:var(--sh-md);}
+.btn-s{background:var(--pri);color:#fff;}
+.btn-s:hover{background:var(--prih);transform:translateY(-1px);box-shadow:var(--sh-md);}
+.btn-g{background:transparent;color:var(--pri);border:2px solid var(--pri);}
+.btn-g:hover{background:var(--prih2);}
+.btn-o{background:transparent;color:var(--acc);border:2px solid var(--acc);}
+.btn-o:hover{background:var(--acch2);}
+.btn-lg{padding:var(--s4) var(--s8);font-size:var(--base);}
+.btn-sm{padding:var(--s2) var(--s4);font-size:var(--xs);min-height:36px;}
+.btn-w{background:#fff;color:var(--pri);}
+.btn-w:hover{background:var(--prih2);}
+/* HERO */
+.hero{position:relative;overflow:hidden;background:linear-gradient(140deg,#050e1f 0%,#0d2b5a 45%,#163870 100%);color:#fff;padding-block:clamp(var(--s16),10vw,var(--s24)) clamp(var(--s10),6vw,var(--s16));}
+.hero-in{position:relative;z-index:1;display:grid;grid-template-columns:55% 45%;gap:var(--s10);align-items:center;}
+.hero-badge{display:inline-flex;align-items:center;gap:var(--s2);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:var(--r-full);padding:var(--s2) var(--s4);font-size:var(--xs);font-weight:700;margin-bottom:var(--s5);color:#ffd18a;}
+.hero-h1{font-size:var(--hero);font-weight:900;line-height:1.08;margin-bottom:var(--s5);}
+.hero-h1 em{font-style:normal;color:var(--acc);}
+.hero-sub{font-size:var(--base);color:rgba(255,255,255,.72);max-width:50ch;margin-bottom:var(--s8);line-height:1.85;}
+.hero-sub strong{color:#fff;}
+.hero-acts{display:flex;align-items:center;gap:var(--s4);flex-wrap:wrap;margin-bottom:var(--s8);}
+.hero-stats{display:flex;gap:var(--s8);}
+.hstat-n{font-family:var(--fnt);font-size:var(--xl);font-weight:900;color:var(--acc);line-height:1;}
+.hstat-l{font-size:var(--xs);color:rgba(255,255,255,.55);margin-top:4px;}
+.app-row{display:flex;gap:var(--s3);flex-wrap:wrap;margin-top:var(--s6);}
+.app-btn{display:flex;align-items:center;gap:var(--s3);background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.18);border-radius:var(--r-xl);padding:var(--s3) var(--s5);color:#fff;min-height:52px;}
+.app-btn:hover{background:rgba(255,255,255,.15);}
+.app-bt{font-size:var(--xs);opacity:.65;display:block;margin-bottom:3px;}
+.app-bs{font-size:var(--sm);font-weight:800;display:block;}
+/* HERO CARD */
+.hero-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:var(--r-2xl);padding:var(--s6);backdrop-filter:blur(8px);width:100%;max-width:380px;}
+.hcard-ttl{font-size:var(--base);font-weight:800;color:#fff;margin-bottom:var(--s2);}
+.hcard-sub{font-size:var(--xs);color:rgba(255,255,255,.55);margin-bottom:var(--s5);}
+.radius-ring{position:relative;width:200px;height:200px;margin:0 auto var(--s5);display:flex;align-items:center;justify-content:center;}
+.ring1{position:absolute;inset:0;border-radius:50%;border:2px dashed rgba(217,118,0,.35);animation:spin 18s linear infinite;}
+.ring2{position:absolute;inset:20px;border-radius:50%;border:1px dashed rgba(255,255,255,.12);}
+@keyframes spin{to{transform:rotate(360deg);}}
+.center-pin{width:14px;height:14px;border-radius:50%;background:var(--acc);border:3px solid #fff;box-shadow:0 0 0 8px rgba(217,118,0,.2);}
+.prov-dot{position:absolute;width:24px;height:24px;border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.3);font-size:10px;}
+.pd-av{background:#267036;}
+.pd-bz{background:#b83224;}
+.hcard-list{display:flex;flex-direction:column;gap:var(--s2);}
+.hcard-item{display:flex;align-items:center;gap:var(--s3);background:rgba(255,255,255,.07);border-radius:var(--r-lg);padding:var(--s3);}
+.hci-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.hci-name{font-size:var(--xs);font-weight:700;color:#fff;}
+.hci-dist{font-size:11px;color:rgba(255,255,255,.45);}
+.hci-tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:var(--r-full);}
+.tag-av{background:rgba(38,112,54,.35);color:#7adc8e;}
+.tag-bz{background:rgba(184,50,36,.35);color:#f4918a;}
+/* SEARCH */
+.srch-box{background:var(--surf);border-radius:var(--r-2xl);padding:var(--s8);box-shadow:var(--sh-lg);border:1px solid var(--brd);}
+.srch-ttl{font-size:var(--xl);font-weight:900;color:var(--pri);margin-bottom:var(--s2);display:flex;align-items:center;gap:var(--s3);}
+.srch-sub{color:var(--txtm);font-size:var(--sm);margin-bottom:var(--s6);}
+.srch-grid{display:grid;grid-template-columns:1fr 1fr auto;gap:var(--s4);align-items:end;}
+.fg{display:flex;flex-direction:column;gap:var(--s2);}
+.fl{font-size:var(--xs);font-weight:800;color:var(--txtm);text-transform:uppercase;letter-spacing:.07em;}
+.fi,.fsel{padding:var(--s3) var(--s4);border:2px solid var(--brd);border-radius:var(--r-lg);background:var(--surfoff);font-size:var(--base);color:var(--txt);font-family:var(--fnb);min-height:48px;}
+.fi:focus,.fsel:focus{outline:none;border-color:var(--acc);background:var(--surf);}
+.fi::placeholder{color:var(--txtf);}
+.radii{display:flex;gap:var(--s2);flex-wrap:wrap;margin-top:var(--s2);}
+.rbtn{padding:var(--s2) var(--s3);border:2px solid var(--brd);border-radius:var(--r-full);font-size:var(--xs);font-weight:800;color:var(--txtm);cursor:pointer;background:var(--surfoff);min-height:36px;}
+.rbtn.on,.rbtn:hover{border-color:var(--acc);color:var(--acc);background:var(--acch2);}
+.loc-wrap{position:relative;}
+.loc-wrap .fi{padding-right:48px;}
+.loc-gps{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--acc);display:flex;align-items:center;justify-content:center;min-width:32px;min-height:32px;}
+/* MAP */
+.map-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--s4);flex-wrap:wrap;gap:var(--s3);}
+.map-ttl{font-size:var(--xl);font-weight:900;color:var(--pri);display:flex;align-items:center;gap:var(--s3);}
+.map-leg{display:flex;gap:var(--s4);align-items:center;font-size:var(--xs);color:var(--txtm);flex-wrap:wrap;}
+.ldot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-left:4px;}
+.res-count{background:var(--prih2);color:var(--pri);font-size:var(--xs);font-weight:800;padding:3px 10px;border-radius:var(--r-full);}
+.map-wrap{border-radius:var(--r-2xl);overflow:hidden;box-shadow:var(--sh-lg);border:2px solid var(--brd);height:480px;}
+#mainMap{height:100%;width:100%;}
+/* SECTION HEADER */
+.sh{text-align:center;margin-bottom:var(--s12);}
+.stag{display:inline-flex;align-items:center;gap:var(--s2);background:var(--acch2);color:var(--acc);font-size:var(--xs);font-weight:800;text-transform:uppercase;letter-spacing:.08em;padding:var(--s1) var(--s3);border-radius:var(--r-full);margin-bottom:var(--s4);}
+.sttl{font-size:var(--xl);font-weight:900;color:var(--pri);margin-bottom:var(--s3);}
+.ssub{color:var(--txtm);font-size:var(--base);max-width:54ch;margin-inline:auto;line-height:1.8;}
+/* PROVIDER CARDS */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));gap:var(--s5);}
+.pcard{background:var(--surf);border-radius:var(--r-2xl);border:1px solid var(--brd);overflow:hidden;box-shadow:var(--sh-sm);transition:transform var(--tr),box-shadow var(--tr);}
+.pcard:hover{transform:translateY(-3px);box-shadow:var(--sh-lg);}
+.pcard-top{position:relative;height:130px;display:flex;align-items:center;justify-content:center;}
+.pcard-ava{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:var(--xl);font-weight:900;color:#fff;border:3px solid #fff;box-shadow:var(--sh-md);}
+.pcard-status{position:absolute;top:10px;right:10px;display:inline-flex;align-items:center;gap:6px;font-size:var(--xs);font-weight:800;padding:4px 10px;border-radius:var(--r-full);}
+.st-av{background:var(--such);color:var(--suc);}
+.st-bz{background:var(--errh);color:var(--err);}
+.pulse{width:7px;height:7px;border-radius:50%;background:currentColor;animation:pls 1.5s ease-in-out infinite;}
+@keyframes pls{0%,100%{opacity:1;}50%{opacity:.4;}}
+.pdist{position:absolute;top:10px;left:10px;background:var(--pri);color:#fff;font-size:var(--xs);font-weight:800;padding:3px 9px;border-radius:var(--r-full);}
+.pcard-b{padding:var(--s5);}
+.pname{font-size:var(--lg);font-weight:900;color:var(--pri);margin-bottom:2px;}
+.ptype{font-size:var(--xs);color:var(--txtm);margin-bottom:var(--s3);}
+.prating{display:flex;align-items:center;gap:var(--s2);margin-bottom:var(--s3);}
+.stars{display:flex;gap:2px;}
+.star{font-size:13px;color:var(--acc);}
+.star.e{color:var(--brd);}
+.rnum{font-size:var(--xs);font-weight:800;color:var(--txtm);}
+.pveh{display:flex;align-items:center;gap:var(--s3);background:var(--surfoff);border-radius:var(--r-lg);padding:var(--s3);margin-bottom:var(--s4);}
+.vico{width:32px;height:32px;border-radius:var(--r-md);background:var(--prih2);display:flex;align-items:center;justify-content:center;color:var(--pri);flex-shrink:0;}
+.vname{font-size:var(--sm);font-weight:700;color:var(--txt);}
+.vplate{font-size:var(--xs);color:var(--txtm);}
+.pacts{display:flex;gap:var(--s2);}
+.pacts .btn{flex:1;}
+.pverif{display:inline-flex;align-items:center;gap:4px;background:var(--such);color:var(--suc);font-size:var(--xs);font-weight:800;padding:2px 8px;border-radius:var(--r-full);margin-bottom:var(--s3);}
+/* HOW IT WORKS */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s8);}
+.step{text-align:center;}
+.step-ico{width:58px;height:58px;border-radius:var(--r-xl);display:flex;align-items:center;justify-content:center;margin:0 auto var(--s4);}
+.si-pri{background:var(--prih2);color:var(--pri);}
+.si-acc{background:var(--acch2);color:var(--acc);}
+.step-ttl{font-size:var(--base);font-weight:800;color:var(--pri);margin-bottom:var(--s2);}
+.step-desc{font-size:var(--sm);color:var(--txtm);line-height:1.75;}
+/* FEATURES */
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:var(--s5);}
+.fcard{background:var(--surf);border-radius:var(--r-2xl);padding:clamp(var(--s6),2vw,var(--s8));border:1px solid var(--brd);}
+.fcard.wide{grid-column:span 2;}
+.fi-box{width:48px;height:48px;border-radius:var(--r-xl);display:flex;align-items:center;justify-content:center;margin-bottom:var(--s4);}
+.fi-p{background:var(--pri);color:#fff;}
+.fi-a{background:var(--acc);color:#fff;}
+.fi-s{background:var(--suc);color:#fff;}
+.fi-g{background:var(--prih2);color:var(--pri);}
+.fttl{font-size:var(--base);font-weight:800;color:var(--pri);margin-bottom:var(--s2);}
+.fdesc{font-size:var(--sm);color:var(--txtm);line-height:1.75;}
+/* TESTIMONIALS */
+.tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s5);}
+.tcard{background:var(--surfoff);border-radius:var(--r-2xl);padding:var(--s6);border:1px solid var(--brd);}
+.tq{font-size:var(--sm);color:var(--txt);line-height:1.85;margin-bottom:var(--s5);font-style:italic;}
+.tau{display:flex;align-items:center;gap:var(--s3);}
+.tava{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:var(--base);font-weight:900;color:#fff;flex-shrink:0;}
+.tan{font-size:var(--sm);font-weight:800;color:var(--txt);}
+.tar{font-size:var(--xs);color:var(--txtm);}
+/* PRICING */
+.pricgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s5);max-width:960px;margin-inline:auto;}
+.pricard{background:var(--surf);border-radius:var(--r-2xl);padding:var(--s8);border:2px solid var(--brd);text-align:center;position:relative;}
+.pricard.feat{border-color:var(--acc);}
+.feat-tag{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--acc);color:#fff;font-size:var(--xs);font-weight:800;padding:3px 14px;border-radius:var(--r-full);white-space:nowrap;}
+.prpn{font-size:var(--base);font-weight:800;color:var(--txtm);text-transform:uppercase;letter-spacing:.08em;margin-bottom:var(--s3);}
+.pramt{font-size:var(--2xl);font-weight:900;color:var(--pri);line-height:1;margin-bottom:var(--s1);}
+.pramt span{font-size:var(--sm);font-weight:400;color:var(--txtm);}
+.pramt.free{color:var(--suc);}
+.prdesc{font-size:var(--sm);color:var(--txtm);margin-bottom:var(--s6);}
+.prfts{text-align:right;display:flex;flex-direction:column;gap:var(--s3);margin-bottom:var(--s8);}
+.prfi{display:flex;align-items:center;gap:var(--s2);font-size:var(--sm);}
+.prfi.n{color:var(--txtf);}
+/* REGISTER */
+.reg-sec{background:linear-gradient(140deg,#050e1f 0%,#0d2b5a 100%);}
+.reg-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--s12);align-items:start;}
+.reg-l h2{font-size:var(--2xl);font-weight:900;color:#fff;margin-bottom:var(--s4);}
+.reg-l p{color:rgba(255,255,255,.72);line-height:1.85;margin-bottom:var(--s6);font-size:var(--base);}
+.reg-bens{display:flex;flex-direction:column;gap:var(--s3);}
+.rben{display:flex;align-items:flex-start;gap:var(--s3);font-size:var(--sm);color:rgba(255,255,255,.82);}
+.bico{width:32px;height:32px;border-radius:var(--r-md);background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;color:var(--acc);flex-shrink:0;margin-top:2px;}
+.rform{background:var(--surf);border-radius:var(--r-2xl);padding:var(--s8);box-shadow:var(--sh-xl);}
+.rform-ttl{font-size:var(--xl);font-weight:900;color:var(--pri);margin-bottom:var(--s2);}
+.rform-sub{font-size:var(--sm);color:var(--txtm);margin-bottom:var(--s6);}
+.tabs{display:flex;gap:var(--s2);background:var(--surfoff);border-radius:var(--r-full);padding:var(--s1);margin-bottom:var(--s6);}
+.tab{flex:1;padding:var(--s2) var(--s4);font-size:var(--sm);font-weight:800;border-radius:var(--r-full);text-align:center;cursor:pointer;color:var(--txtm);min-height:40px;display:flex;align-items:center;justify-content:center;}
+.tab.on{background:var(--surf);color:var(--pri);box-shadow:var(--sh-sm);}
+.fstk{display:flex;flex-direction:column;gap:var(--s4);}
+.otp-row{display:flex;gap:var(--s2);}
+.oi{flex:1;text-align:center;letter-spacing:.15em;font-size:var(--lg);font-weight:800;padding:var(--s3);min-height:56px;}
+.plan-g{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3);margin-top:var(--s2);}
+.plc{border:2px solid var(--brd);border-radius:var(--r-xl);padding:var(--s4);cursor:pointer;text-align:center;}
+.plc:hover,.plc.on{border-color:var(--acc);background:var(--acch2);}
+.plp{font-size:var(--xl);font-weight:900;color:var(--pri);}
+.plp small{font-size:var(--xs);font-weight:400;color:var(--txtm);}
+.pln{font-size:var(--sm);font-weight:800;color:var(--txt);}
+.plf{font-size:var(--xs);color:var(--txtm);margin-top:2px;}
+/* FAQ */
+.faq-list{max-width:740px;margin-inline:auto;display:flex;flex-direction:column;gap:var(--s3);}
+.fitem{border-radius:var(--r-xl);border:1px solid var(--brd);overflow:hidden;}
+.fq{display:flex;justify-content:space-between;align-items:center;padding:var(--s5) var(--s6);font-size:var(--base);font-weight:700;color:var(--pri);cursor:pointer;gap:var(--s4);background:var(--surf);width:100%;text-align:right;min-height:54px;}
+.fq:hover{background:var(--surfoff);}
+.fchev{flex-shrink:0;transition:transform var(--tr);color:var(--acc);}
+.fitem.open .fchev{transform:rotate(180deg);}
+.fa{display:none;padding:var(--s4) var(--s6) var(--s5);font-size:var(--sm);color:var(--txtm);line-height:1.85;border-top:1px solid var(--div);background:var(--surfoff);}
+.fitem.open .fa{display:block;}
+/* CTA BANNER */
+.cta-ban{background:linear-gradient(135deg,var(--acc) 0%,#bf6700 100%);color:#fff;text-align:center;}
+.cta-ban h2{font-size:var(--2xl);font-weight:900;margin-bottom:var(--s4);}
+.cta-ban p{font-size:var(--base);opacity:.85;max-width:52ch;margin-inline:auto;margin-bottom:var(--s8);line-height:1.8;}
+.cta-acts{display:flex;gap:var(--s4);justify-content:center;flex-wrap:wrap;}
+/* FOOTER */
+.footer{background:#07111f;color:rgba(255,255,255,.65);}
+.foot-in{padding-block:var(--s16) var(--s10);display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:var(--s10);}
+.fb h3{font-size:var(--lg);font-weight:900;color:#fff;margin-bottom:var(--s3);}
+.fb p{font-size:var(--sm);line-height:1.85;max-width:32ch;}
+.fcol h4{font-size:var(--xs);font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.07em;margin-bottom:var(--s4);}
+.flinks{display:flex;flex-direction:column;gap:var(--s2);}
+.flink{font-size:var(--sm);color:rgba(255,255,255,.55);}
+.flink:hover{color:var(--acc);}
+.fbot{border-top:1px solid rgba(255,255,255,.08);padding-block:var(--s6);display:flex;justify-content:space-between;align-items:center;font-size:var(--xs);color:rgba(255,255,255,.35);flex-wrap:wrap;gap:var(--s3);}
+.slinks{display:flex;gap:var(--s3);margin-top:var(--s4);}
+.sl{width:36px;height:36px;border-radius:var(--r-md);background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.45);}
+.sl:hover{background:var(--acc);color:#fff;}
+/* MODALS */
+.mo{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:var(--s4);}
+.mo.open{display:flex;}
+.mod{background:var(--surf);border-radius:var(--r-2xl);max-width:640px;width:100%;max-height:92dvh;overflow-y:auto;box-shadow:var(--sh-xl);}
+.mod-hdr{padding:var(--s6);border-bottom:1px solid var(--div);display:flex;justify-content:space-between;align-items:flex-start;gap:var(--s4);}
+.mod-ttl{font-size:var(--lg);font-weight:900;color:var(--pri);}
+.mod-sub{font-size:var(--xs);color:var(--txtm);margin-top:4px;}
+.mc{width:38px;height:38px;border-radius:50%;background:var(--surfoff);display:flex;align-items:center;justify-content:center;color:var(--txtm);flex-shrink:0;}
+.mc:hover{background:var(--errh);color:var(--err);}
+.mod-b{padding:var(--s6);}
+.msec{margin-bottom:var(--s6);}
+.mst{font-size:var(--xs);font-weight:800;color:var(--txtm);text-transform:uppercase;letter-spacing:.07em;margin-bottom:var(--s3);}
+.prof-hero{display:flex;gap:var(--s5);align-items:flex-start;margin-bottom:var(--s5);}
+.prof-ava{width:72px;height:72px;border-radius:var(--r-xl);display:flex;align-items:center;justify-content:center;font-size:var(--xl);font-weight:900;color:#fff;flex-shrink:0;}
+.prof-name{font-size:var(--xl);font-weight:900;color:var(--pri);margin-bottom:var(--s2);}
+.revlist{display:flex;flex-direction:column;gap:var(--s3);}
+.revitem{background:var(--surfoff);border-radius:var(--r-lg);padding:var(--s4);}
+.rev-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--s2);}
+.rev-auth{font-size:var(--sm);font-weight:700;color:var(--txt);}
+.rev-date{font-size:var(--xs);color:var(--txtf);}
+.rev-txt{font-size:var(--sm);color:var(--txtm);line-height:1.75;}
+/* CHAT */
+.chat-mod{max-width:480px;}
+.chat-msgs{background:var(--surfoff);border-radius:var(--r-xl);padding:var(--s4);height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:var(--s3);margin-bottom:var(--s4);}
+.cm{max-width:78%;}
+.cm.m{align-self:flex-end;}
+.cm.t{align-self:flex-start;}
+.cbl{padding:var(--s3) var(--s4);border-radius:var(--r-xl);font-size:var(--sm);line-height:1.6;}
+.cm.m .cbl{background:var(--pri);color:#fff;border-bottom-left-radius:var(--r-sm);}
+.cm.t .cbl{background:var(--surf);color:var(--txt);border-bottom-right-radius:var(--r-sm);box-shadow:var(--sh-sm);}
+.ct{font-size:var(--xs);color:var(--txtf);margin-top:3px;}
+.cm.m .ct{text-align:right;}
+.ci-row{display:flex;gap:var(--s2);}
+.ci{flex:1;padding:var(--s3) var(--s4);border:2px solid var(--brd);border-radius:var(--r-full);background:var(--surfoff);font-size:var(--sm);}
+.ci:focus{outline:none;border-color:var(--pri);}
+.cs{background:var(--pri);color:#fff;padding:var(--s2) var(--s4);border-radius:var(--r-full);font-size:var(--sm);font-weight:800;min-height:44px;display:flex;align-items:center;justify-content:center;}
+.cs:hover{background:var(--prih);}
+/* NOTIF */
+.notif{position:fixed;top:var(--s6);left:50%;transform:translateX(-50%);z-index:600;background:var(--pri);color:#fff;border-radius:var(--r-full);padding:var(--s3) var(--s6);font-size:var(--sm);font-weight:700;box-shadow:var(--sh-lg);display:flex;align-items:center;gap:var(--s2);opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
+.notif.show{opacity:1;}
+.notif.suc{background:var(--suc);}
+/* RESPONSIVE */
+@media(max-width:1000px){
+.hero-in{grid-template-columns:1fr;}.hero-visual{display:none;}
+.srch-grid{grid-template-columns:1fr;}
+.tgrid{grid-template-columns:1fr 1fr;}
+.pricgrid{grid-template-columns:1fr;}
+.foot-in{grid-template-columns:1fr 1fr;}}
+@media(max-width:720px){
+.steps{grid-template-columns:1fr 1fr;}
+.fgrid{grid-template-columns:1fr;}.fcard.wide{grid-column:span 1;}
+.reg-grid{grid-template-columns:1fr;}
+.tgrid{grid-template-columns:1fr;}
+.pricgrid{grid-template-columns:1fr;}}
+@media(max-width:600px){
+.nav{display:none;}.hmbgr{display:flex;}
+.steps{grid-template-columns:1fr;}
+.foot-in{grid-template-columns:1fr;}
+.plan-g{grid-template-columns:1fr;}}
+@media(prefers-color-scheme:dark){:root:not([data-theme]){
+--bg:#0c0d0f;--surf:#121417;--surfoff:#1b1e24;--div:#2a2f3c;--brd:#353c4d;
+--txt:#dde0e8;--txtm:#858ea2;--txtf:#4c5568;--pri:#5585d4;--prih:#3d6cc0;--prih2:#182848;
+--acc:#f0a020;--acch:#e08f0a;--acch2:#3a2600;--suc:#44a862;--such:#163024;--err:#e56358;--errh:#381818;
+--sh-md:0 4px 16px rgba(0,0,0,.34);--sh-lg:0 12px 40px rgba(0,0,0,.42);--sh-xl:0 24px 64px rgba(0,0,0,.5);}}
+</style>
+</head>
+<body>
+<!-- NOTIFICATION -->
+<div class="notif" id="notif" role="status" aria-live="polite"></div>
+
+<!-- MOBILE MENU -->
+<div class="mob-menu" id="mobMenu" role="dialog" aria-label="القائمة الرئيسية">
+  <div class="mob-hdr">
+    <div class="logo">
+      <svg width="36" height="36" viewBox="0 0 40 40" fill="none"><rect width="40" height="40" rx="10" fill="#0d2b5a"/><path d="M6 24h2l3-8h14l3 8h2" stroke="#d97600" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><rect x="6" y="24" width="28" height="2.5" rx="1" fill="#d97600"/><circle cx="13" cy="29" r="2.5" fill="#d97600" stroke="#fff" stroke-width="1.5"/><circle cx="27" cy="29" r="2.5" fill="#d97600" stroke="#fff" stroke-width="1.5"/></svg>
+      <div class="logo-text"><b>TowCarNearMe</b></div>
+    </div>
+    <button class="mc" onclick="closeMobMenu()" aria-label="إغلاق القائمة">✕</button>
+  </div>
+  <a class="mob-nl" href="#how" onclick="closeMobMenu()">كيف تعمل المنصة</a>
+  <a class="mob-nl" href="#search" onclick="closeMobMenu()">ابحث عن ونش</a>
+  <a class="mob-nl" href="#features" onclick="closeMobMenu()">مميزات المنصة</a>
+  <a class="mob-nl" href="#pricing" onclick="closeMobMenu()">الأسعار</a>
+  <a class="mob-nl" href="#register" onclick="closeMobMenu()">سجّل كمزوّد خدمة</a>
+  <a class="mob-nl" href="#faq" onclick="closeMobMenu()">الأسئلة الشائعة</a>
+  <div style="display:flex;flex-direction:column;gap:var(--s3);margin-top:var(--s4)">
+    <button class="btn btn-s btn-lg" onclick="openRegModal('provider');closeMobMenu()">🚛 سجّل كصاحب ونش</button>
+    <button class="btn btn-g btn-lg" onclick="openRegModal('customer');closeMobMenu()">🔍 دخول الزبائن (مجاني)</button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="cw hdr-in">
+    <a href="#" class="logo" aria-label="TowCarNearMe الرئيسية">
+      <svg width="36" height="36" viewBox="0 0 40 40" fill="none" aria-hidden="true"><rect width="40" height="40" rx="10" fill="#0d2b5a"/><path d="M6 24h2l3-8h14l3 8h2" stroke="#d97600" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><rect x="6" y="24" width="28" height="2.5" rx="1" fill="#d97600"/><circle cx="13" cy="29" r="2.5" fill="#d97600" stroke="#fff" stroke-width="1.5"/><circle cx="27" cy="29" r="2.5" fill="#d97600" stroke="#fff" stroke-width="1.5"/><rect x="27" y="13" width="8" height="6" rx="1" fill="#d97600"/><circle cx="31" cy="17" r="3" fill="#0d2b5a" stroke="#d97600" stroke-width="1.5"/></svg>
+      <div class="logo-text"><b>TowCarNearMe</b><span>towcarnearme.online</span></div>
+    </a>
+    <nav class="nav" aria-label="التنقل الرئيسي">
+      <a class="nl" href="#how">كيف تعمل</a>
+      <a class="nl" href="#search">ابحث</a>
+      <a class="nl" href="#features">مميزات</a>
+      <a class="nl" href="#pricing">الأسعار</a>
+      <a class="nl" href="#faq">الأسئلة</a>
+    </nav>
+    <div class="hdr-acts">
+      <button class="btn-th" id="thBtn" onclick="toggleTheme()" aria-label="تغيير السمة">🌙</button>
+      <button class="btn btn-o btn-sm" onclick="openRegModal('customer')">ابحث (مجاني)</button>
+      <button class="btn btn-s btn-sm" onclick="openRegModal('provider')">سجّل كصاحب ونش</button>
+      <button class="hmbgr" id="hmbgr" aria-label="القائمة" onclick="openMobMenu()">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero" aria-label="قسم البطل">
+  <div class="cw hero-in">
+    <div>
+      <div class="hero-badge">⚡ منصة إيجاد خدمات الونش والإنقاذ الأسرع</div>
+      <h1 class="hero-h1">أقرب <em>ونش</em><br>من موقعك <em>الآن</em></h1>
+      <p class="hero-sub">تعطلت سيارتك؟ ابحث عن <strong>أقرب صاحب ونش</strong> منك خلال ثوانٍ عبر البحث الجغرافي. <strong>بلا عمولات، بلا وسطاء.</strong></p>
+      <div class="hero-acts">
+        <button class="btn btn-p btn-lg" onclick="document.getElementById('search').scrollIntoView({behavior:'smooth'})">📍 ابحث الآن</button>
+        <button class="btn btn-w btn-lg" onclick="openRegModal('provider')">🚛 سجّل كصاحب ونش</button>
+      </div>
+      <div class="hero-stats">
+        <div><div class="hstat-n" id="st1">0</div><div class="hstat-l">صاحب ونش مسجّل</div></div>
+        <div><div class="hstat-n" id="st2">0</div><div class="hstat-l">مدينة مشمولة</div></div>
+        <div><div class="hstat-n" id="st3">0%</div><div class="hstat-l">بلا عمولة</div></div>
+      </div>
+      <div class="app-row">
+        <a class="app-btn" href="#" aria-label="Google Play">
+          <span style="font-size:24px">▶</span>
+          <span><em class="app-bt">متاح قريباً على</em><b class="app-bs">Google Play</b></span>
+        </a>
+        <a class="app-btn" href="#" aria-label="App Store">
+          <span style="font-size:24px">⬇</span>
+          <span><em class="app-bt">متاح قريباً على</em><b class="app-bs">App Store</b></span>
+        </a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-card">
+        <div class="hcard-ttl">🔍 نتائج البحث بالقرب منك</div>
+        <div class="hcard-sub">دائرة 6 كم من موقعك الحالي</div>
+        <div class="radius-ring">
+          <div class="ring1"></div>
+          <div class="ring2"></div>
+          <div class="center-pin"></div>
+          <div class="prov-dot pd-av" style="top:10%;left:55%">🚛</div>
+          <div class="prov-dot pd-av" style="bottom:16%;right:14%">🚛</div>
+          <div class="prov-dot pd-bz" style="top:54%;left:10%">🚛</div>
+        </div>
+        <div class="hcard-list">
+          <div class="hcard-item">
+            <div class="hci-dot" style="background:#267036"></div>
+            <div style="flex:1"><div class="hci-name">أبو محمد - ونش فلاتبيد</div><div class="hci-dist">1.2 كم · ⭐ 4.9</div></div>
+            <span class="hci-tag tag-av">متاح</span>
+          </div>
+          <div class="hcard-item">
+            <div class="hci-dot" style="background:#267036"></div>
+            <div style="flex:1"><div class="hci-name">خالد الشمري - سطحة</div><div class="hci-dist">3.4 كم · ⭐ 4.7</div></div>
+            <span class="hci-tag tag-av">متاح</span>
+          </div>
+          <div class="hcard-item">
+            <div class="hci-dot" style="background:#b83224"></div>
+            <div style="flex:1"><div class="hci-name">فهد الرويلي - ونش</div><div class="hci-dist">4.8 كم · ⭐ 4.5</div></div>
+            <span class="hci-tag tag-bz">مشغول</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SEARCH SECTION -->
+<section id="search" class="sec">
+  <div class="cw">
+    <div class="sh">
+      <div class="stag">📍 ابحث الآن</div>
+      <h2 class="sttl">ابحث عن أقرب ونش من موقعك</h2>
+      <p class="ssub">حدد موقعك الحالي واختر نطاق البحث لعرض أصحاب الونش المتاحين على الخريطة التفاعلية</p>
+    </div>
+    <div class="srch-box" style="margin-bottom:var(--s8)">
+      <div class="srch-ttl">🗺 بحث جغرافي — Radius Search</div>
+      <p class="srch-sub">فعّل GPS أو اكتب موقعك، ثم اختر نطاق البحث بالكيلومتر</p>
+      <div class="srch-grid">
+        <div class="fg">
+          <label class="fl" for="locInput">موقعك الحالي</label>
+          <div class="loc-wrap">
+            <input class="fi" id="locInput" type="text" placeholder="اكتب عنوانك أو اسم المنطقة..." autocomplete="off">
+            <button class="loc-gps" onclick="getGPS()" title="تحديد موقعي تلقائياً" aria-label="GPS">📡</button>
+          </div>
+        </div>
+        <div class="fg">
+          <div class="fl">نطاق البحث</div>
+          <div class="radii">
+            <button class="rbtn" data-r="2" onclick="setR(2,this)">2 كم</button>
+            <button class="rbtn on" data-r="6" onclick="setR(6,this)">6 كم</button>
+            <button class="rbtn" data-r="10" onclick="setR(10,this)">10 كم</button>
+            <button class="rbtn" data-r="20" onclick="setR(20,this)">20 كم</button>
+          </div>
+        </div>
+        <button class="btn btn-p btn-lg" onclick="doSearch()">🔍 ابحث</button>
+      </div>
+    </div>
+    <div>
+      <div class="map-hdr">
+        <div class="map-ttl">🗺 الخريطة التفاعلية <span class="res-count" id="resCount" style="display:inline-block">0 ونش</span></div>
+        <div class="map-leg">
+          <span><span class="ldot" style="background:#267036"></span>متاح</span>
+          <span><span class="ldot" style="background:#b83224"></span>مشغول</span>
+          <span><span class="ldot" style="background:var(--acc)"></span>موقعك</span>
+        </div>
+      </div>
+      <div class="map-wrap"><div id="mainMap"></div></div>
+    </div>
+    <div style="margin-top:var(--s8)">
+      <h3 style="font-size:var(--lg);font-weight:900;color:var(--pri);margin-bottom:var(--s5)">🚛 الونشات المتاحة في منطقتك</h3>
+      <div class="pgrid" id="provCards"></div>
+    </div>
+  </div>
+</section>
+<!-- HOW IT WORKS -->
+<section id="how" class="sec" style="background:var(--surfoff)">
+  <div class="cw">
+    <div class="sh">
+      <div class="stag">ℹ كيف تعمل</div>
+      <h2 class="sttl">كيف تستخدم المنصة؟</h2>
+      <p class="ssub">خطوات بسيطة تصلك من لحظة التعطل إلى أقرب صاحب ونش</p>
+    </div>
+    <!-- FOR CUSTOMER -->
+    <div style="margin-bottom:var(--s10)">
+      <div style="text-align:center;margin-bottom:var(--s6)">
+        <span class="stag">🔍 للزبون — مجاني 100%</span>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-ico si-acc">📍</div>
+          <div class="step-ttl">1. حدد موقعك</div>
+          <p class="step-desc">فعّل GPS أو اكتب عنوانك، وحدد نطاق البحث من 2 إلى 20 كم حسب حاجتك.</p>
+        </div>
+        <div class="step">
+          <div class="step-ico si-pri">📋</div>
+          <div class="step-ttl">2. تصفح النتائج</div>
+          <p class="step-desc">تظهر قائمة أصحاب الونش المتاحين مرتبةً من الأقرب إلى الأبعد مع التقييمات.</p>
+        </div>
+        <div class="step">
+          <div class="step-ico si-acc">👤</div>
+          <div class="step-ttl">3. اطّلع على الملف</div>
+          <p class="step-desc">افتح صفحة صاحب الونش، اقرأ تعليقات الزبائن السابقين وشاهد صور وسيلته.</p>
+        </div>
+        <div class="step">
+          <div class="step-ico si-pri">📞</div>
+          <div class="step-ttl">4. تواصل مباشرة</div>
+          <p class="step-desc">أظهر رقم الهاتف وتواصل مباشرة، أو استخدم نظام الدردشة في المنصة — بلا عمولة أبداً.</p>
+        </div>
+      </div>
+    </div>
+    <!-- FOR PROVIDER -->
+    <div style="background:var(--surf);border-radius:var(--r-2xl);padding:var(--s8);border:1px solid var(--brd)">
+      <div style="text-align:center;margin-bottom:var(--s6)">
+        <span class="stag">🚛 لصاحب الونش — اشتراك سنوي</span>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-ico si-acc">📱</div>
+          <div class="step-ttl">1. سجّل وتحقق</div>
+          <p class="step-desc">أنشئ حسابك وأكّد رقم هاتفك عبر OTP. كل حساب مرتبط بهاتف موثّق.</p>
+        </div>
+        <div class="step">
+          <div class="step-ico si-pri">📸</div>
+          <div class="step-ttl">2. أضف وسيلتك</div>
+          <p class="step-desc">ضع صور ونشك أو سطحتك، نوع الوسيلة، رقم اللوحة، وبيانات الطاقة والتحميل.</p>
+        </div>
+        <div class="step">
+          <div class="step-ico si-acc">📍</div>
+          <div class="step-ttl">3. حدد موقعك</div>
+          <p class="step-desc">فعّل "Set My Location" أو حدد موقعك يدوياً بـ Drop Pin. ستظهر فوراً للزبائن القريبين.</p>
+        </div>
+        <div class="step">
+          <div class="step-ico si-pri">🔄</div>
+          <div class="step-ttl">4. أنجز وحدّث</div>
+          <p class="step-desc">عند استلام مهمة اضبط حالتك "مشغول". بعد الإنجاز، حدّث موقعك وعُد للظهور في القوائم.</p>
+        </div>
+      </div>
+    </div>
+    <!-- AVAILABILITY FLOW -->
+    <div style="margin-top:var(--s8);background:var(--prih2);border-radius:var(--r-2xl);padding:var(--s8);border:1px solid var(--brd)">
+      <h3 style="font-size:var(--lg);font-weight:900;color:var(--pri);margin-bottom:var(--s4);text-align:center">نظام حالة التوفر</h3>
+      <div style="display:flex;align-items:center;justify-content:center;gap:var(--s6);flex-wrap:wrap;text-align:center">
+        <div style="background:var(--such);border-radius:var(--r-xl);padding:var(--s4) var(--s6)">
+          <div style="font-size:24px;margin-bottom:var(--s2)">🟢</div>
+          <div style="font-weight:800;color:var(--suc);font-size:var(--sm)">متاح</div>
+          <div style="font-size:var(--xs);color:var(--txtm);margin-top:var(--s1)">يظهر في نتائج البحث</div>
+        </div>
+        <div style="font-size:var(--xl);color:var(--txtm)">→</div>
+        <div style="background:var(--errh);border-radius:var(--r-xl);padding:var(--s4) var(--s6)">
+          <div style="font-size:24px;margin-bottom:var(--s2)">🔴</div>
+          <div style="font-weight:800;color:var(--err);font-size:var(--sm)">مشغول</div>
+          <div style="font-size:var(--xs);color:var(--txtm);margin-top:var(--s1)">لا يظهر في البحث</div>
+        </div>
+        <div style="font-size:var(--xl);color:var(--txtm)">→</div>
+        <div style="background:var(--such);border-radius:var(--r-xl);padding:var(--s4) var(--s6)">
+          <div style="font-size:24px;margin-bottom:var(--s2)">📍</div>
+          <div style="font-weight:800;color:var(--suc);font-size:var(--sm)">تحديث الموقع</div>
+          <div style="font-size:var(--xs);color:var(--txtm);margin-top:var(--s1)">Set New Location</div>
+        </div>
+        <div style="font-size:var(--xl);color:var(--txtm)">→</div>
+        <div style="background:var(--such);border-radius:var(--r-xl);padding:var(--s4) var(--s6)">
+          <div style="font-size:24px;margin-bottom:var(--s2)">✅</div>
+          <div style="font-weight:800;color:var(--suc);font-size:var(--sm)">متاح مجدداً</div>
+          <div style="font-size:var(--xs);color:var(--txtm);margin-top:var(--s1)">يعود للظهور فوراً</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" class="sec">
+  <div class="cw">
+    <div class="sh">
+      <div class="stag">⭐ مميزات المنصة</div>
+      <h2 class="sttl">كل ما تحتاجه في منصة واحدة</h2>
+      <p class="ssub">مميزات مصمّمة خصيصاً لربط الزبائن بأصحاب الونش بأسرع وأبسط طريقة</p>
+    </div>
+    <div class="fgrid">
+      <!-- FEATURED WIDE CARD -->
+      <div class="fcard wide" style="background:linear-gradient(135deg,#050e1f 0%,#163870 100%);border:none;color:#fff">
+        <div style="display:grid;grid-template-columns:1fr auto;gap:var(--s8);align-items:center">
+          <div>
+            <div style="font-size:var(--xs);font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--acc);margin-bottom:var(--s3)">🌟 الميزة الجوهرية</div>
+            <h3 style="font-size:var(--xl);font-weight:900;color:#fff;margin-bottom:var(--s4)">بحث جغرافي ذكي — Radius Search</h3>
+            <p style="color:rgba(255,255,255,.75);font-size:var(--base);line-height:1.85;margin-bottom:var(--s5)">بمجرد وقوع عطل، تفتح المنصة وتحدد نطاق بحثك (مثلاً 6 كم). ستظهر لك فوراً كل أصحاب الونش المتاحين داخل تلك الدائرة، مرتّبين من الأقرب إلى الأبعد.</p>
+            <button class="btn btn-p" onclick="document.getElementById('search').scrollIntoView({behavior:'smooth'})">جرّب الآن ←</button>
+          </div>
+          <div style="min-width:200px;display:flex;align-items:center;justify-content:center">
+            <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" width="200" height="200" aria-hidden="true">
+              <circle cx="100" cy="100" r="90" stroke="rgba(217,118,0,.2)" stroke-width="1.5" stroke-dasharray="8 5"/>
+              <circle cx="100" cy="100" r="60" stroke="rgba(217,118,0,.35)" stroke-width="1.5" stroke-dasharray="6 4"/>
+              <circle cx="100" cy="100" r="28" stroke="rgba(217,118,0,.55)" stroke-width="1.5"/>
+              <circle cx="100" cy="100" r="10" fill="#d97600"/>
+              <circle cx="100" cy="100" r="18" fill="rgba(217,118,0,.2)"/>
+              <circle cx="138" cy="68" r="11" fill="#267036"/>
+              <text x="133" y="72" fill="white" font-size="11" text-anchor="middle">🚛</text>
+              <circle cx="68" cy="140" r="11" fill="#267036"/>
+              <text x="63" y="144" fill="white" font-size="11" text-anchor="middle">🚛</text>
+              <circle cx="152" cy="130" r="11" fill="#b83224"/>
+              <text x="147" y="134" fill="white" font-size="11" text-anchor="middle">🚛</text>
+              <line x1="100" y1="100" x2="138" y2="68" stroke="rgba(217,118,0,.5)" stroke-width="1.5" stroke-dasharray="4 3"/>
+              <line x1="100" y1="100" x2="68" y2="140" stroke="rgba(217,118,0,.5)" stroke-width="1.5" stroke-dasharray="4 3"/>
+              <text x="122" y="86" fill="rgba(255,255,255,.7)" font-size="9">2.1 كم</text>
+              <text x="68" y="122" fill="rgba(255,255,255,.7)" font-size="9">3.8 كم</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="fcard">
+        <div class="fi-box fi-p">🟢</div>
+        <h3 class="fttl">حالة التوفر اللحظية</h3>
+        <p class="fdesc">صاحب الونش يضع حالته: "متاح" أو "مشغول". الأشخاص المشغولون مخفيون تلقائياً من نتائج البحث لتجنيب الزبون إضاعة الوقت.</p>
+      </div>
+      <div class="fcard">
+        <div class="fi-box fi-a">📍</div>
+        <h3 class="fttl">Drop Pin — تحديث الموقع</h3>
+        <p class="fdesc">بعد إنجاز مهمة النقل وتفريغ الوسيلة، يضع صاحب الونش موقعه الجديد عبر GPS أو تحديد يدوي (Drop Pin) ويعود للظهور فوراً.</p>
+      </div>
+      <div class="fcard">
+        <div class="fi-box fi-s">📞</div>
+        <h3 class="fttl">تواصل مباشر — بلا عمولة</h3>
+        <p class="fdesc">يمكن إظهار رقم الهاتف للتواصل المباشر، أو استخدام نظام الدردشة المدمج في المنصة. الطرفان يتحدثان مباشرة بلا وسيط ولا عمولة.</p>
+      </div>
+      <div class="fcard">
+        <div class="fi-box fi-g">⭐</div>
+        <h3 class="fttl">التقييمات والمراجعات</h3>
+        <p class="fdesc">يقيّم الزبائن أصحاب الونش بعد كل عملية ويتركون تعليقاتهم. يساعد على بناء السمعة وترتيب الأفضل في نتائج البحث.</p>
+      </div>
+      <div class="fcard">
+        <div class="fi-box fi-p">🔐</div>
+        <h3 class="fttl">توثيق الهاتف — OTP</h3>
+        <p class="fdesc">كل حساب مزوّد خدمة مرتبط برقم هاتف موثّق عبر رمز OTP. يضمن مصداقية الحسابات وسلامة الزبائن من الحسابات المزيّفة.</p>
+      </div>
+      <!-- Revenue model wide card -->
+      <div class="fcard wide">
+        <div class="fi-box fi-a">💰</div>
+        <h3 class="fttl">نموذج الإيرادات — مصادر ربح متعددة لصاحب المنصة</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:var(--s4);margin-top:var(--s4)">
+          <div style="background:var(--surfoff);border-radius:var(--r-xl);padding:var(--s4)">
+            <div style="font-weight:800;color:var(--pri);margin-bottom:var(--s2);font-size:var(--sm)">📅 اشتراك سنوي</div>
+            <p style="font-size:var(--xs);color:var(--txtm);line-height:1.7">رسوم سنوية على مزودي الخدمة. مجاني تماماً للزبائن.</p>
+          </div>
+          <div style="background:var(--surfoff);border-radius:var(--r-xl);padding:var(--s4)">
+            <div style="font-weight:800;color:var(--pri);margin-bottom:var(--s2);font-size:var(--sm)">⭐ إعلان مميّز</div>
+            <p style="font-size:var(--xs);color:var(--txtm);line-height:1.7">يدفع المزوّد للظهور أعلى نتائج البحث ببطاقة بارزة.</p>
+          </div>
+          <div style="background:var(--surfoff);border-radius:var(--r-xl);padding:var(--s4)">
+            <div style="font-weight:800;color:var(--pri);margin-bottom:var(--s2);font-size:var(--sm)">🔄 Bump Up</div>
+            <p style="font-size:var(--xs);color:var(--txtm);line-height:1.7">إعادة تنشيط الإعلان وإبرازه تلقائياً كل عدد محدد من الأيام.</p>
+          </div>
+          <div style="background:var(--surfoff);border-radius:var(--r-xl);padding:var(--s4)">
+            <div style="font-weight:800;color:var(--pri);margin-bottom:var(--s2);font-size:var(--sm)">🏅 شارة موثوق</div>
+            <p style="font-size:var(--xs);color:var(--txtm);line-height:1.7">شارة مميزة مدفوعة تُظهر مصداقية المزوّد وترفع معدل التواصل.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="sec" style="background:var(--surfoff)">
+  <div class="cw">
+    <div class="sh">
+      <div class="stag">💬 آراء المستخدمين</div>
+      <h2 class="sttl">ماذا يقول مستخدمو المنصة؟</h2>
+    </div>
+    <div class="tgrid">
+      <div class="tcard">
+        <p class="tq">"تعطلت سيارتي في الطريق الدائري وبدون ما أشرب قهوة وجدت ونش على بعد 1.8 كيلو ووصل بعشر دقائق. المنصة ما كانت تأخذ ريال عمولة وهذا اللي يميزها!"</p>
+        <div class="tau"><div class="tava" style="background:var(--pri)">م</div><div><div class="tan">محمد السعيد</div><div class="tar">⭐⭐⭐⭐⭐ · الرياض</div></div></div>
+      </div>
+      <div class="tcard">
+        <p class="tq">"أنا صاحب ونش، قبل المنصة كنت أتجول بحثاً عن زبائن. الآن الزبائن يجدونني من الخريطة وطلباتي زادت 3 مرات في الشهر الأول."</p>
+        <div class="tau"><div class="tava" style="background:var(--acc)">خ</div><div><div class="tan">خالد العمري</div><div class="tar">⭐⭐⭐⭐⭐ · جدة</div></div></div>
+      </div>
+      <div class="tcard">
+        <p class="tq">"ميزة إظهار رقم الهاتف مباشرة بدل ما أدفع عمولة لتطبيق وسيط - هذا اللي كنت أحتاجه. تواصلت مباشرة مع صاحب الونش وجهزنا الأمور على طول."</p>
+        <div class="tau"><div class="tava" style="background:var(--suc)">س</div><div><div class="tan">سارة الزهراني</div><div class="tar">⭐⭐⭐⭐⭐ · الدمام</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" class="sec">
+  <div class="cw">
+    <div class="sh">
+      <div class="stag">💳 الأسعار</div>
+      <h2 class="sttl">خطط واضحة وشفافة</h2>
+      <p class="ssub">مجاني للزبائن دائماً. اشتراكات سنوية مرنة لأصحاب الونش.</p>
+    </div>
+    <div class="pricgrid">
+      <div class="pricard">
+        <div class="prpn">الزبون</div>
+        <div class="pramt free">مجاني <span>/ دائماً</span></div>
+        <p class="prdesc">كل ما يحتاجه الزبون للبحث والتواصل بلا أي رسوم.</p>
+        <div class="prfts">
+          <div class="prfi"><span style="color:var(--suc)">✓</span> بحث جغرافي غير محدود</div>
+          <div class="prfi"><span style="color:var(--suc)">✓</span> عرض أرقام الهواتف</div>
+          <div class="prfi"><span style="color:var(--suc)">✓</span> نظام الدردشة المباشرة</div>
+          <div class="prfi"><span style="color:var(--suc)">✓</span> قراءة التقييمات</div>
+          <div class="prfi"><span style="color:var(--suc)">✓</span> بلا عمولة أبداً</div>
+        </div>
+        <button class="btn btn-g" style="width:100%" onclick="openRegModal('customer')">ابدأ مجاناً</button>
+      </div>
+      <div class="pricard feat">
+        <div class="feat-tag">الأكثر شيوعاً</div>
+        <div class="prpn">المزوّد الأساسي</div>
+        <div class="pramt">XXX <span>/ سنوياً</span></div>
+        <p class="prdesc">كل ما يحتاجه صاحب الونش لجذب زبائن جدد باستمرار.</p>
+        <div class="prfts">
+          <div class="prfi"><span style="color:var(--suc)">✓</span> إعلان واحد نشط</div>
+          <div class="prfi"><span style="color:var(--suc)">✓</span> ظهور في نتائج البحث</div>
+          <div class="prfi"><span style="color:var(--suc)">✓</span> تحديث الموقع (Drop Pin)</div>
+          <div class="prfi"><span style="color:var(--suc)">✓</span> استقبال التقييمات</div>
+          <div class="prfi"><span style="color:var(--suc)">✓</span> نظام الدردشة</div>
+          <div class="prfi n"><span>✗</span> إعلان مميّز</div>
+        </div>
+        <button class="btn btn-p" style="width:100%" onclick="openRegModal('provider')">اشترك الآن</button>
+      </div>
+      <div class="pricard">
+        <div class="prpn">المزوّد المميّز</div>
+        <div class="pramt">XXX <span>/ سنوياً</span></div>
+        <p class="prdesc">الباقة الاحترافية لمزيد من الظهور والزبائن.</p>
+        <div class="prfts">
+          <div class="prfi"><span style="color:var(--suc)">✓</span> كل مميزات الأساسي</div>
+          <div class="prfi"><span style="color:var(--suc)">✓</span> إعلان مميّز (Featured)</div>
+          <div class="prfi"><span style="color:var(--suc)">✓</span> Bump Up تلقائي</div>
+          <div class="prfi"><span style="color:var(--suc)">✓</span> شارة "موثوق"</div>
+          <div class="prfi"><span style="color:var(--suc)">✓</span> أولوية في نتائج البحث</div>
+          <div class="prfi"><span style="color:var(--suc)">✓</span> لوحة إحصاءات متقدمة</div>
+        </div>
+        <button class="btn btn-s" style="width:100%" onclick="openRegModal('provider')">ترقية للمميّز</button>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:var(--s8);background:var(--prih2);border-radius:var(--r-2xl);padding:var(--s8);max-width:640px;margin-inline:auto">
+      <div style="font-size:32px;margin-bottom:var(--s3)">💰</div>
+      <h3 style="font-size:var(--lg);font-weight:900;color:var(--pri);margin-bottom:var(--s2)">بلا عمولات — أبداً</h3>
+      <p style="font-size:var(--sm);color:var(--txtm);line-height:1.8">المنصة لا تأخذ أي نسبة من أي صفقة بين الزبون وصاحب الونش. ما تدفعه هو فقط رسوم الاشتراك السنوي للوصول للمنصة.</p>
+    </div>
+  </div>
+</section>
+<!-- REGISTER -->
+<section id="register" class="sec reg-sec">
+  <div class="cw">
+    <div class="reg-grid">
+      <div class="reg-l">
+        <h2>انضم إلى المنصة اليوم</h2>
+        <p>سواء كنت صاحب ونش تبحث عن زبائن، أو زبوناً يحتاج خدمة إنقاذ — المنصة لديها ما تحتاجه.</p>
+        <div class="reg-bens">
+          <div class="rben"><div class="bico">📍</div><div>بحث جغرافي دقيق يعرضك لزبائن في محيطك المباشر</div></div>
+          <div class="rben"><div class="bico">🔐</div><div>حساب موثّق بهاتف مع نظام OTP لضمان المصداقية</div></div>
+          <div class="rben"><div class="bico">💬</div><div>نظام دردشة مدمج للتواصل مع الزبائن مباشرة</div></div>
+          <div class="rben"><div class="bico">⭐</div><div>نظام تقييمات يبني سمعتك ويزيد ثقة الزبائن بك</div></div>
+          <div class="rben"><div class="bico">💰</div><div>بلا عمولات — تواصل مباشر بدون وسيط</div></div>
+        </div>
+      </div>
+      <div class="rform">
+        <div class="rform-ttl">إنشاء حساب</div>
+        <p class="rform-sub">اختر نوع حسابك للبدء</p>
+        <div class="tabs">
+          <div class="tab on" id="tab-prov" onclick="switchRegTab('provider')">🚛 صاحب ونش</div>
+          <div class="tab" id="tab-cust" onclick="switchRegTab('customer')">🔍 زبون / باحث</div>
+        </div>
+        <div id="form-provider" class="fstk">
+          <div class="fg"><label class="fl" for="rn">الاسم الكامل</label><input class="fi" id="rn" type="text" placeholder="مثال: محمد عبدالله"></div>
+          <div class="fg"><label class="fl" for="rp">رقم الهاتف</label><input class="fi" id="rp" type="tel" placeholder="+966 5X XXX XXXX" dir="ltr"></div>
+          <div class="fg"><label class="fl">خطة الاشتراك</label>
+            <div class="plan-g">
+              <div class="plc on" id="pc1" onclick="selPlan(1)"><div class="plp">أساسي <small>/ سنوياً</small></div><div class="pln">المزوّد الأساسي</div><div class="plf">ظهور في البحث</div></div>
+              <div class="plc" id="pc2" onclick="selPlan(2)"><div class="plp">مميّز <small>/ سنوياً</small></div><div class="pln">المزوّد المميّز</div><div class="plf">أولوية + Bump Up</div></div>
+            </div>
+          </div>
+          <div class="fg"><label class="fl" for="rv">نوع الوسيلة</label>
+            <select class="fsel" id="rv">
+              <option value="">اختر نوع وسيلتك...</option>
+              <option>ونش / Tow Truck</option><option>سطحة / Flatbed</option>
+              <option>سطحة خاصة / Private Carrier</option><option>ونش متعدد / Multi-Car</option>
+            </select>
+          </div>
+          <button class="btn btn-p" style="width:100%" onclick="sendOTP()">📱 إرسال OTP للتحقق</button>
+        </div>
+        <div id="form-customer" class="fstk" style="display:none">
+          <div style="background:var(--such);border-radius:var(--r-xl);padding:var(--s6);text-align:center;margin-bottom:var(--s4)">
+            <div style="font-size:36px;margin-bottom:var(--s2)">🎉</div>
+            <div style="font-size:var(--base);font-weight:800;color:var(--suc);margin-bottom:var(--s2)">مجاني بالكامل للزبائن!</div>
+            <p style="font-size:var(--sm);color:var(--txtm);line-height:1.75">لا حاجة للتسجيل للبحث عن ونش. فقط ادخل المنصة وابحث مباشرة. للمزايا الإضافية (الدردشة، التقييم) أنشئ حساباً مجانياً.</p>
+          </div>
+          <div class="fg"><label class="fl" for="cn">الاسم (اختياري)</label><input class="fi" id="cn" type="text" placeholder="اسمك..."></div>
+          <div class="fg"><label class="fl" for="cp">رقم الهاتف (اختياري)</label><input class="fi" id="cp" type="tel" placeholder="+966 5X XXX XXXX" dir="ltr"></div>
+          <button class="btn btn-g" style="width:100%" onclick="document.getElementById('search').scrollIntoView({behavior:'smooth'})">🔍 ابحث عن ونش الآن</button>
+          <button class="btn btn-s" style="width:100%;margin-top:var(--s2)" onclick="showNotif('سيتم إنشاء حسابك قريباً!','suc')">✅ إنشاء حساب مجاني</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" class="sec">
+  <div class="cw">
+    <div class="sh">
+      <div class="stag">❓ الأسئلة الشائعة</div>
+      <h2 class="sttl">أسئلة يسألها الجميع</h2>
+    </div>
+    <div class="faq-list">
+      <div class="fitem">
+        <button class="fq" onclick="toggleFAQ(this)">هل المنصة مجانية للزبائن؟ <span class="fchev">▼</span></button>
+        <div class="fa">نعم، بالكامل ودائماً. الزبون يبحث عن الونش ويتصل مباشرة بلا أي رسوم أو عمولة. الاشتراك السنوي للمزوّدين فقط.</div>
+      </div>
+      <div class="fitem">
+        <button class="fq" onclick="toggleFAQ(this)">كيف يحدث التواصل بين الزبون وصاحب الونش؟ <span class="fchev">▼</span></button>
+        <div class="fa">إما عبر إظهار رقم الهاتف في الملف الشخصي للاتصال المباشر، أو عبر نظام الدردشة النصية المدمج في المنصة. الطرفان يتحدثان مباشرة بدون وسيط ولا عمولة.</div>
+      </div>
+      <div class="fitem">
+        <button class="fq" onclick="toggleFAQ(this)">ماذا يحدث عندما يكون صاحب الونش مشغولاً؟ <span class="fchev">▼</span></button>
+        <div class="fa">عندما يستلم صاحب الونش مهمة، يغيّر حالته إلى "مشغول"، فيختفي تلقائياً من نتائج البحث. بعد إتمام المهمة وتفريغ الوسيلة، يحدّث موقعه الجديد عبر "Set My Location" أو Drop Pin ويعود للظهور فوراً.</div>
+      </div>
+      <div class="fitem">
+        <button class="fq" onclick="toggleFAQ(this)">كم يحق لصاحب الونش من إعلانات؟ <span class="fchev">▼</span></button>
+        <div class="fa">إعلان واحد فقط لكل حساب، يعكس وسيلته الحالية وموقعه. هذا يضمن دقة المعلومات ومصداقية المنصة للزبائن.</div>
+      </div>
+      <div class="fitem">
+        <button class="fq" onclick="toggleFAQ(this)">كيف يتم التحقق من هوية أصحاب الونش؟ <span class="fchev">▼</span></button>
+        <div class="fa">كل حساب مزوّد خدمة مرتبط برقم هاتف تم التأكد من ملكيته عبر رمز OTP. هذا يمنع إنشاء حسابات مزيّفة ويضمن أن كل مزوّد شخص حقيقي.</div>
+      </div>
+      <div class="fitem">
+        <button class="fq" onclick="toggleFAQ(this)">هل المنصة تأخذ عمولة من الصفقات؟ <span class="fchev">▼</span></button>
+        <div class="fa">لا، المنصة لا تأخذ أي عمولة أو نسبة من أي صفقة. ما يدفعه المزوّد هو فقط رسوم الاشتراك السنوي للوصول للمنصة والظهور في نتائج البحث.</div>
+      </div>
+      <div class="fitem">
+        <button class="fq" onclick="toggleFAQ(this)">ما هي خدمة Bump Up؟ <span class="fchev">▼</span></button>
+        <div class="fa">Bump Up هي ميزة إعادة تنشيط الإعلان وإبرازه في أعلى نتائج البحث كل عدد محدد من الأيام. يحدد صاحب المنصة الجدول الزمني لعملية التنشيط.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BANNER -->
+<section class="sec cta-ban">
+  <div class="cw">
+    <h2>ابدأ الآن — مجاني للزبائن دائماً</h2>
+    <p>سواء تعطلت سيارتك أو تبحث عن زيادة زبائنك، TowCarNearMe هو شريكك المثالي.</p>
+    <div class="cta-acts">
+      <button class="btn btn-w btn-lg" onclick="document.getElementById('search').scrollIntoView({behavior:'smooth'})">🔍 ابحث عن ونش الآن</button>
+      <button class="btn btn-lg" style="background:rgba(255,255,255,.15);color:#fff;border:2px solid rgba(255,255,255,.4)" onclick="openRegModal('provider')">🚛 سجّل كصاحب ونش</button>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="cw">
+    <div class="foot-in">
+      <div class="fb">
+        <div style="display:flex;align-items:center;gap:var(--s3);margin-bottom:var(--s4)">
+          <svg width="36" height="36" viewBox="0 0 40 40" fill="none" aria-hidden="true"><rect width="40" height="40" rx="10" fill="#1a3a6e"/><path d="M6 24h2l3-8h14l3 8h2" stroke="#d97600" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><rect x="6" y="24" width="28" height="2.5" rx="1" fill="#d97600"/><circle cx="13" cy="29" r="2.5" fill="#d97600" stroke="#fff" stroke-width="1.5"/><circle cx="27" cy="29" r="2.5" fill="#d97600" stroke="#fff" stroke-width="1.5"/></svg>
+          <div><h3 style="margin:0">TowCarNearMe</h3><div style="font-size:11px;color:rgba(255,255,255,.35)">towcarnearme.online</div></div>
+        </div>
+        <p>منصة تربط الزبون بأقرب صاحب ونش جغرافياً. بلا عمولات، بلا وسطاء. فقط تواصل مباشر.</p>
+        <div class="slinks">
+          <a class="sl" href="#" aria-label="تويتر">𝕏</a>
+          <a class="sl" href="#" aria-label="إنستغرام">📷</a>
+          <a class="sl" href="#" aria-label="واتساب">💬</a>
+        </div>
+      </div>
+      <div class="fcol">
+        <h4>للزبائن</h4>
+        <div class="flinks">
+          <a class="flink" href="#search">ابحث عن ونش</a>
+          <a class="flink" href="#how">كيف تعمل</a>
+          <a class="flink" href="#faq">الأسئلة الشائعة</a>
+          <a class="flink" href="#">تقديم شكوى</a>
+        </div>
+      </div>
+      <div class="fcol">
+        <h4>لأصحاب الونش</h4>
+        <div class="flinks">
+          <a class="flink" href="#register">سجّل حسابك</a>
+          <a class="flink" href="#pricing">الأسعار</a>
+          <a class="flink" href="#features">المميزات</a>
+          <a class="flink" href="#">دعم المزودين</a>
+        </div>
+      </div>
+      <div class="fcol">
+        <h4>المنصة</h4>
+        <div class="flinks">
+          <a class="flink" href="#">عن towcarnearme</a>
+          <a class="flink" href="#">سياسة الخصوصية</a>
+          <a class="flink" href="#">شروط الاستخدام</a>
+          <a class="flink" href="#">تواصل معنا</a>
+        </div>
+      </div>
+    </div>
+    <div class="fbot">
+      <span>© 2026 TowCarNearMe.online — جميع الحقوق محفوظة</span>
+      <span>بُني بـ ❤ لخدمة أصحاب السيارات والونشات</span>
+    </div>
+  </div>
+</footer>
+
+<!-- PROVIDER PROFILE MODAL -->
+<div class="mo" id="moProfile">
+  <div class="mod" role="dialog" aria-labelledby="profileTitle" aria-modal="true">
+    <div class="mod-hdr">
+      <div><div class="mod-ttl" id="profileTitle">ملف صاحب الونش</div><div class="mod-sub">تفاصيل ووسيلة وتقييمات</div></div>
+      <button class="mc" onclick="closeMo('moProfile')" aria-label="إغلاق">✕</button>
+    </div>
+    <div class="mod-b" id="profileBody"></div>
+  </div>
+</div>
+
+<!-- CHAT MODAL -->
+<div class="mo" id="moChat">
+  <div class="mod chat-mod" role="dialog" aria-labelledby="chatTitle" aria-modal="true">
+    <div class="mod-hdr">
+      <div><div class="mod-ttl" id="chatTitle">💬 دردشة مع المزوّد</div><div class="mod-sub">تواصل مباشر عبر المنصة</div></div>
+      <button class="mc" onclick="closeMo('moChat')" aria-label="إغلاق">✕</button>
+    </div>
+    <div class="mod-b">
+      <div class="chat-msgs" id="chatMsgs">
+        <div class="cm t"><div class="cbl">مرحباً، هل أنت متاح الآن؟</div><div class="ct">10:24</div></div>
+        <div class="cm m"><div class="cbl">نعم متاح! أين موقعك تحديداً؟</div><div class="ct">10:25</div></div>
+        <div class="cm t"><div class="cbl">عند تقاطع الشارع الرئيسي مع شارع الأمير</div><div class="ct">10:25</div></div>
+      </div>
+      <div class="ci-row">
+        <input class="ci" id="ciMsg" type="text" placeholder="اكتب رسالتك..." onkeydown="if(event.key==='Enter')sendMsg()">
+        <button class="cs" onclick="sendMsg()" aria-label="إرسال">←</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTER MODAL -->
+<div class="mo" id="moReg">
+  <div class="mod" role="dialog" aria-labelledby="regTitle" aria-modal="true">
+    <div class="mod-hdr">
+      <div><div class="mod-ttl" id="regTitle">إنشاء حساب</div><div class="mod-sub" id="regSub">انضم إلى منصة TowCarNearMe</div></div>
+      <button class="mc" onclick="closeMo('moReg')" aria-label="إغلاق">✕</button>
+    </div>
+    <div class="mod-b">
+      <div class="tabs">
+        <div class="tab on" id="mtab-p" onclick="switchRegTab('provider')">🚛 صاحب ونش</div>
+        <div class="tab" id="mtab-c" onclick="switchRegTab('customer')">🔍 زبون</div>
+      </div>
+      <div id="mform-provider" class="fstk">
+        <div class="fg"><label class="fl" for="mrn">الاسم الكامل</label><input class="fi" id="mrn" type="text" placeholder="اسمك الكامل"></div>
+        <div class="fg"><label class="fl" for="mrp">رقم الهاتف</label><input class="fi" id="mrp" type="tel" placeholder="+966 5X XXX XXXX" dir="ltr"></div>
+        <div class="fg"><label class="fl" for="mrv">نوع الوسيلة</label>
+          <select class="fsel" id="mrv">
+            <option value="">اختر نوع وسيلتك...</option>
+            <option>ونش / Tow Truck</option><option>سطحة / Flatbed</option>
+            <option>سطحة خاصة / Private Carrier</option><option>ونش متعدد / Multi-Car</option>
+          </select>
+        </div>
+        <div id="otpSec" style="display:none">
+          <div class="fg"><label class="fl">رمز OTP المُرسل</label>
+            <div class="otp-row">
+              <input class="fi oi" type="tel" maxlength="1" id="o1" oninput="focusNext(this,'o2')">
+              <input class="fi oi" type="tel" maxlength="1" id="o2" oninput="focusNext(this,'o3')">
+              <input class="fi oi" type="tel" maxlength="1" id="o3" oninput="focusNext(this,'o4')">
+              <input class="fi oi" type="tel" maxlength="1" id="o4" oninput="focusNext(this,null)">
+            </div>
+          </div>
+          <button class="btn btn-p" style="width:100%" onclick="verifyOTP()">✅ تحقق وأكمل التسجيل</button>
+        </div>
+        <button class="btn btn-p" style="width:100%" id="sendOtpBtn" onclick="sendOTP()">📱 إرسال OTP للتحقق</button>
+      </div>
+      <div id="mform-customer" style="display:none" class="fstk">
+        <div style="background:var(--such);border-radius:var(--r-xl);padding:var(--s6);text-align:center;margin-bottom:var(--s4)">
+          <div style="font-size:36px;margin-bottom:var(--s2)">🎉</div>
+          <div style="font-weight:800;color:var(--suc);font-size:var(--base);margin-bottom:var(--s2)">البحث مجاني بالكامل!</div>
+          <p style="font-size:var(--sm);color:var(--txtm);line-height:1.75">لا تحتاج حساباً للبحث عن ونش. فقط ابدأ البحث مباشرة.</p>
+        </div>
+        <div class="fg"><label class="fl" for="mcn">الاسم (اختياري)</label><input class="fi" id="mcn" type="text" placeholder="اسمك..."></div>
+        <button class="btn btn-g" style="width:100%" onclick="closeMo('moReg');document.getElementById('search').scrollIntoView({behavior:'smooth'})">🔍 ابحث الآن</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+// ============ DATA ============
+const PROVIDERS = [
+  {id:1,name:"أبو محمد الرشيد",type:"ونش فلاتبيد / Flatbed",lat:24.730,lng:46.690,avail:true,rating:4.9,reviews:87,phone:"+966501234567",vehicle:"فورد سوبر دوتي 2022",plate:"ABC 1234",color:"#0d2b5a",init:"م",feat:true},
+  {id:2,name:"خالد الشمري",type:"سطحة عادية / Tow Truck",lat:24.742,lng:46.705,avail:true,rating:4.7,reviews:63,phone:"+966512345678",vehicle:"شيفروليه سيلفرادو 2021",plate:"DEF 5678",color:"#267036",init:"خ",feat:false},
+  {id:3,name:"فهد الرويلي",type:"ونش متعدد / Multi-Car",lat:24.718,lng:46.678,avail:false,rating:4.5,reviews:44,phone:"+966523456789",vehicle:"مرسيدس سبرنتر 2023",plate:"GHI 9012",color:"#b83224",init:"ف",feat:false},
+  {id:4,name:"عبدالله السبيعي",type:"سطحة خاصة / Private Carrier",lat:24.755,lng:46.715,avail:true,rating:4.8,reviews:102,phone:"+966534567890",vehicle:"دودج رام 2020",plate:"JKL 3456",color:"#d97600",init:"ع",feat:true},
+  {id:5,name:"سعد الغامدي",type:"ونش / Tow Car",lat:24.710,lng:46.700,avail:true,rating:4.6,reviews:38,phone:"+966545678901",vehicle:"تويوتا هايلوكس 2022",plate:"MNO 7890",color:"#5585d4",init:"س",feat:false},
+  {id:6,name:"نايف القحطاني",type:"سطحة مجهزة",lat:24.748,lng:46.685,avail:false,rating:4.4,reviews:29,phone:"+966556789012",vehicle:"إيسوزو كبير 2019",plate:"PQR 1357",color:"#a86fdf",init:"ن",feat:false},
+];
+const REVIEWS = {
+  1:[{a:"أحمد م.",d:"قبل 3 أيام",s:5,t:"سرعة الاستجابة رائعة، وصل خلال 8 دقائق فقط من إرسال رقمه."},
+     {a:"سلمى ك.",d:"الأسبوع الماضي",s:5,t:"محترف جداً وتعامل ممتاز. أنصح به بشدة."}],
+  2:[{a:"فيصل ع.",d:"أمس",s:5,t:"خالد كان لطيفاً وسريعاً. المنصة سهّلت الموضوع كثيراً."}],
+  4:[{a:"نورة ب.",d:"قبل يومين",s:5,t:"عبدالله صاحب ونش محترف، أسعاره معقولة وخدمته ممتازة."},
+     {a:"هاني م.",d:"قبل 4 أيام",s:4,t:"تجربة جيدة، تأخر قليلاً لكن عوّض بالخدمة المميزة."}]
+};
+
+// ============ MAP ============
+let map, userMarker, radiusCircle, provMarkers=[], currentRadius=6;
+let userPos={lat:24.733,lng:46.693};
+
+function initMap(){
+  map = L.map('mainMap',{zoomControl:true}).setView([userPos.lat,userPos.lng],13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'© OpenStreetMap',maxZoom:19
+  }).addTo(map);
+  setTimeout(()=>{ map.invalidateSize(); doSearch(); },300);
+}
+
+function setR(r,el){
+  currentRadius=r;
+  document.querySelectorAll('.rbtn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  doSearch();
+}
+
+function getGPS(){
+  if(!navigator.geolocation){showNotif('المتصفح لا يدعم GPS');return;}
+  showNotif('جاري تحديد موقعك...','');
+  navigator.geolocation.getCurrentPosition(p=>{
+    userPos={lat:p.coords.latitude,lng:p.coords.longitude};
+    document.getElementById('locInput').value='موقعك الحالي (GPS)';
+    doSearch();
+    showNotif('تم تحديد موقعك بنجاح ✓','suc');
+  },()=>showNotif('تعذّر تحديد الموقع'));
+}
+
+function haversine(lat1,lng1,lat2,lng2){
+  const R=6371,dLat=(lat2-lat1)*Math.PI/180,dLng=(lng2-lng1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function doSearch(){
+  if(!map){initMap();return;}
+  const loc=document.getElementById('locInput').value.trim();
+  if(loc && !loc.includes('GPS')){
+    // simple offset for demo
+    userPos={lat:24.733+Math.random()*.01-.005,lng:46.693+Math.random()*.01-.005};
+  }
+  // clear old
+  provMarkers.forEach(m=>map.removeLayer(m));
+  provMarkers=[];
+  if(userMarker) map.removeLayer(userMarker);
+  if(radiusCircle) map.removeLayer(radiusCircle);
+  // user marker
+  const youIcon=L.divIcon({html:'<div style="background:var(--acc,#d97600);width:18px;height:18px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.3)"></div>',iconSize:[18,18],iconAnchor:[9,9]});
+  userMarker=L.marker([userPos.lat,userPos.lng],{icon:youIcon,title:'موقعك'}).addTo(map).bindPopup('📍 موقعك الحالي');
+  // radius circle
+  radiusCircle=L.circle([userPos.lat,userPos.lng],{radius:currentRadius*1000,color:'#d97600',fillColor:'#d97600',fillOpacity:.06,weight:1.5,dashArray:'6 4'}).addTo(map);
+  // add providers
+  const nearby=[];
+  PROVIDERS.forEach(p=>{
+    const dist=haversine(userPos.lat,userPos.lng,p.lat,p.lng);
+    p.dist=dist;
+    if(dist<=currentRadius){
+      nearby.push(p);
+      const ic=L.divIcon({html:'<div style="background:'+( p.avail?'#267036':'#b83224')+';width:26px;height:26px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:900">'+p.init+'</div>',iconSize:[26,26],iconAnchor:[13,13]});
+      const mk=L.marker([p.lat,p.lng],{icon:ic,title:p.name}).addTo(map)
+        .bindPopup('<b>'+p.name+'</b><br>'+p.type+'<br>'+(p.avail?'<span style="color:#267036">متاح</span>':'<span style="color:#b83224">مشغول</span>')+'<br>'+dist.toFixed(1)+' كم<br><button onclick="openProfile('+p.id+')" style="margin-top:6px;background:#0d2b5a;color:#fff;border:none;border-radius:999px;padding:4px 12px;font-size:12px;cursor:pointer">عرض الملف</button>');
+      provMarkers.push(mk);
+    }
+  });
+  // update count
+  const avail=nearby.filter(p=>p.avail);
+  document.getElementById('resCount').textContent=avail.length+' ونش متاح';
+  // fit bounds
+  if(nearby.length>0){
+    const bounds=L.latLngBounds([[userPos.lat,userPos.lng],...nearby.map(p=>[p.lat,p.lng])]);
+    map.fitBounds(bounds,{padding:[40,40]});
+  } else {
+    map.setView([userPos.lat,userPos.lng],13);
+  }
+  // render cards
+  renderCards(nearby.sort((a,b)=>a.dist-b.dist));
+}
+
+// ============ PROVIDER CARDS ============
+function starsHTML(r){
+  let h='';
+  for(let i=1;i<=5;i++) h+='<span class="star'+(i>r?' e':'')+'">★</span>';
+  return h;
+}
+
+function renderCards(providers){
+  const cont=document.getElementById('provCards');
+  if(providers.length===0){
+    cont.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:var(--s16);color:var(--txtm)"><div style="font-size:48px;margin-bottom:var(--s4)">🚛</div><h3 style="font-size:var(--lg);font-weight:800;color:var(--pri);margin-bottom:var(--s3)">لا يوجد ونش في هذا النطاق</h3><p>حاول توسيع نطاق البحث أو تغيير الموقع.</p></div>';
+    return;
+  }
+  cont.innerHTML=providers.map(p=>`
+    <div class="pcard">
+      <div class="pcard-top" style="background:linear-gradient(135deg,${p.color}22,${p.color}44)">
+        <div class="pcard-ava" style="background:${p.color}">${p.init}</div>
+        <span class="pcard-status ${p.avail?'st-av':'st-bz'}">
+          <span class="${p.avail?'pulse':''}"></span>${p.avail?'متاح':'مشغول'}
+        </span>
+        <span class="pdist">${p.dist.toFixed(1)} كم</span>
+        ${p.feat?'<div style="position:absolute;bottom:10px;left:10px;background:var(--acc);color:#fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px">⭐ مميّز</div>':''}
+      </div>
+      <div class="pcard-b">
+        <div class="pverif">✓ رقم موثّق</div>
+        <div class="pname">${p.name}</div>
+        <div class="ptype">${p.type}</div>
+        <div class="prating"><div class="stars">${starsHTML(Math.round(p.rating))}</div><span class="rnum">${p.rating} (${p.reviews} تقييم)</span></div>
+        <div class="pveh">
+          <div class="vico">🚛</div>
+          <div><div class="vname">${p.vehicle}</div><div class="vplate">${p.plate}</div></div>
+        </div>
+        <div class="pacts">
+          <button class="btn btn-s btn-sm" onclick="openProfile(${p.id})">ملف كامل</button>
+          ${p.avail?`<button class="btn btn-p btn-sm" onclick="openChat(${p.id})">💬 دردشة</button><button class="btn btn-o btn-sm" onclick="showPhone('${p.phone}')">📞 اتصال</button>`:'<button class="btn btn-sm" style="background:var(--surfoff);color:var(--txtm)" disabled>مشغول حالياً</button>'}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============ PROFILE MODAL ============
+function openProfile(id){
+  const p=PROVIDERS.find(x=>x.id===id);
+  if(!p)return;
+  const revs=REVIEWS[id]||[];
+  document.getElementById('profileTitle').textContent='ملف '+p.name;
+  document.getElementById('profileBody').innerHTML=`
+    <div class="prof-hero">
+      <div class="prof-ava" style="background:${p.color}">${p.init}</div>
+      <div>
+        <div class="prof-name">${p.name}</div>
+        <div style="font-size:var(--sm);color:var(--txtm);margin-bottom:var(--s2)">${p.type}</div>
+        <div style="display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap">
+          <div class="prating" style="margin:0"><div class="stars">${starsHTML(Math.round(p.rating))}</div><span class="rnum">${p.rating} (${p.reviews} تقييم)</span></div>
+          <span class="pverif">✓ موثّق</span>
+          <span class="pcard-status ${p.avail?'st-av':'st-bz'}">${p.avail?'✓ متاح':'● مشغول'}</span>
+        </div>
+      </div>
+    </div>
+    <div class="msec">
+      <div class="mst">الوسيلة</div>
+      <div style="background:var(--surfoff);border-radius:var(--r-xl);padding:var(--s4);display:flex;align-items:center;gap:var(--s4)">
+        <div style="font-size:40px">🚛</div>
+        <div><div style="font-weight:800;color:var(--txt)">${p.vehicle}</div><div style="font-size:var(--xs);color:var(--txtm)">اللوحة: ${p.plate}</div></div>
+      </div>
+    </div>
+    <div class="msec">
+      <div class="mst">المسافة من موقعك</div>
+      <div style="background:var(--prih2);border-radius:var(--r-xl);padding:var(--s4);text-align:center">
+        <div style="font-size:var(--xl);font-weight:900;color:var(--pri)">${p.dist?p.dist.toFixed(1):'—'} كم</div>
+        <div style="font-size:var(--xs);color:var(--txtm)">تقريباً من موقعك الحالي</div>
+      </div>
+    </div>
+    ${revs.length?`<div class="msec"><div class="mst">تعليقات الزبائن</div><div class="revlist">${revs.map(r=>`<div class="revitem"><div class="rev-hdr"><span class="rev-auth">${r.a}</span><span class="rev-date">${r.d}</span></div><div class="prating" style="margin-bottom:var(--s2)"><div class="stars">${starsHTML(r.s)}</div></div><div class="rev-txt">${r.t}</div></div>`).join('')}</div></div>`:''}
+    ${p.avail?`<div style="display:flex;gap:var(--s3);flex-wrap:wrap">
+      <button class="btn btn-p btn-lg" style="flex:1" onclick="openChat(${p.id});closeMo('moProfile')">💬 ابدأ محادثة</button>
+      <button class="btn btn-s btn-lg" style="flex:1" onclick="showPhone('${p.phone}');closeMo('moProfile')">📞 اتصال مباشر</button>
+    </div>`:`<div style="background:var(--errh);border-radius:var(--r-xl);padding:var(--s4);text-align:center;color:var(--err);font-weight:800">مشغول حالياً — يرجى المحاولة لاحقاً</div>`}
+  `;
+  openMo('moProfile');
+}
+
+function showPhone(ph){
+  showNotif('رقم الهاتف: '+ph,'suc');
+  window.location.href='tel:'+ph;
+}
+
+// ============ CHAT ============
+function openChat(id){
+  const p=PROVIDERS.find(x=>x.id===id);
+  if(p) document.getElementById('chatTitle').textContent='💬 دردشة مع '+p.name;
+  document.getElementById('chatMsgs').innerHTML=
+    '<div class="cm t"><div class="cbl">مرحباً، هل أنت متاح الآن؟</div><div class="ct">الآن</div></div>'+
+    '<div class="cm m"><div class="cbl">نعم أنا متاح! أرسل موقعك.</div><div class="ct">الآن</div></div>';
+  openMo('moChat');
+  setTimeout(()=>document.getElementById('ciMsg').focus(),300);
+}
+
+function sendMsg(){
+  const ci=document.getElementById('ciMsg'), v=ci.value.trim();
+  if(!v)return;
+  const msgs=document.getElementById('chatMsgs');
+  const t=new Date().toLocaleTimeString('ar',{hour:'2-digit',minute:'2-digit'});
+  msgs.innerHTML+=`<div class="cm t"><div class="cbl">${v}</div><div class="ct">${t}</div></div>`;
+  ci.value='';
+  msgs.scrollTop=msgs.scrollHeight;
+  setTimeout(()=>{
+    const replies=["حسناً، في طريقي إليك!","فهمت موقعك، سأصل خلال 10 دقائق.","بالخدمة، هل السيارة بحاجة للرفع الكامل؟","تمام، هل تحتاج سطحة أم ونش عادي؟"];
+    msgs.innerHTML+=`<div class="cm m"><div class="cbl">${replies[Math.floor(Math.random()*replies.length)]}</div><div class="ct">${t}</div></div>`;
+    msgs.scrollTop=msgs.scrollHeight;
+  },1200);
+}
+
+// ============ MODAL HELPERS ============
+function openMo(id){document.getElementById(id).classList.add('open');document.body.style.overflow='hidden';}
+function closeMo(id){document.getElementById(id).classList.remove('open');if(!document.querySelector('.mo.open'))document.body.style.overflow='';}
+document.querySelectorAll('.mo').forEach(m=>m.addEventListener('click',function(e){if(e.target===this)closeMo(this.id);}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.querySelectorAll('.mo.open').forEach(m=>closeMo(m.id));}});
+
+// ============ REG MODAL ============
+function openRegModal(type){
+  switchRegTab(type);
+  openMo('moReg');
+}
+function switchRegTab(t){
+  ['provider','customer'].forEach(x=>{
+    document.getElementById('mform-'+x).style.display=x===t?'flex':'none';
+    const tab=document.getElementById('mtab-'+(x==='provider'?'p':'c'));
+    if(tab)tab.classList.toggle('on',x===t);
+    const tab2=document.getElementById('tab-'+x);
+    if(tab2)tab2.classList.toggle('on',x===t);
+    const form2=document.getElementById('form-'+x);
+    if(form2)form2.style.display=x===t?'flex':'none';
+  });
+  document.getElementById('mform-'+t).style.display='flex';
+}
+// Inline reg section tabs
+function switchRegTab(t){
+  ['provider','customer'].forEach(x=>{
+    const mf=document.getElementById('mform-'+x);if(mf)mf.style.display=x===t?'flex':'none';
+    const mt=document.getElementById('mtab-'+(x==='provider'?'p':'c'));if(mt)mt.classList.toggle('on',x===t);
+    const sf=document.getElementById('form-'+x);if(sf)sf.style.display=x===t?'flex':'none';
+    const st=document.getElementById('tab-'+x);if(st)st.classList.toggle('on',x===t);
+  });
+}
+
+let otpSent=false;
+function sendOTP(){
+  const ph=(document.getElementById('mrp')||document.getElementById('rp')||{}).value;
+  if(!ph||ph.length<8){showNotif('أدخل رقم هاتف صحيح');return;}
+  showNotif('تم إرسال رمز OTP إلى '+ph,'suc');
+  otpSent=true;
+  const otpSec=document.getElementById('otpSec');
+  const sendBtn=document.getElementById('sendOtpBtn');
+  if(otpSec){otpSec.style.display='flex';otpSec.style.flexDirection='column';otpSec.style.gap='var(--s4)';}
+  if(sendBtn)sendBtn.style.display='none';
+  setTimeout(()=>document.getElementById('o1')&&document.getElementById('o1').focus(),300);
+}
+function focusNext(el,nextId){if(el.value&&nextId){document.getElementById(nextId).focus();}}
+function verifyOTP(){
+  const code=['o1','o2','o3','o4'].map(i=>{const e=document.getElementById(i);return e?e.value:'';}).join('');
+  if(code.length<4){showNotif('أدخل الرمز المكوّن من 4 أرقام');return;}
+  showNotif('🎉 تم التسجيل بنجاح! مرحباً بك','suc');
+  setTimeout(()=>closeMo('moReg'),1500);
+}
+
+function selPlan(n){
+  document.getElementById('pc1').classList.toggle('on',n===1);
+  document.getElementById('pc2').classList.toggle('on',n===2);
+}
+
+// ============ FAQ ============
+function toggleFAQ(btn){btn.closest('.fitem').classList.toggle('open');}
+
+// ============ NOTIF ============
+let notifTimer;
+function showNotif(msg,type=''){
+  const n=document.getElementById('notif');
+  n.textContent=msg;n.className='notif'+(type?' '+type:'');
+  n.classList.add('show');
+  clearTimeout(notifTimer);
+  notifTimer=setTimeout(()=>n.classList.remove('show'),3500);
+}
+
+// ============ MOBILE MENU ============
+function openMobMenu(){
+  document.getElementById('mobMenu').classList.add('open');
+  document.body.style.overflow='hidden';
+  document.getElementById('hmbgr').setAttribute('aria-expanded','true');
+}
+function closeMobMenu(){
+  document.getElementById('mobMenu').classList.remove('open');
+  document.body.style.overflow='';
+  document.getElementById('hmbgr').setAttribute('aria-expanded','false');
+}
+
+// ============ THEME ============
+(function(){
+  const h=document.documentElement,d=h.getAttribute('data-theme');
+  const pref=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+  const theme=d||pref;
+  h.setAttribute('data-theme',theme);
+  const btn=document.getElementById('thBtn');
+  if(btn)btn.textContent=theme==='dark'?'☀':'🌙';
+})();
+function toggleTheme(){
+  const h=document.documentElement;
+  const t=h.getAttribute('data-theme')==='dark'?'light':'dark';
+  h.setAttribute('data-theme',t);
+  const btn=document.getElementById('thBtn');
+  if(btn)btn.textContent=t==='dark'?'☀':'🌙';
+}
+
+// ============ COUNTER ANIMATION ============
+function animCount(el,target,suffix,dur){
+  let s=0,step=target/60;
+  const t=setInterval(()=>{
+    s=Math.min(s+step,target);
+    el.textContent=Math.floor(s).toLocaleString('ar')+(suffix||'');
+    if(s>=target)clearInterval(t);
+  },dur/60);
+}
+function onVisible(el,cb){
+  new IntersectionObserver(ent=>{if(ent[0].isIntersecting){cb();ent[0].target._io&&ent[0].target._io.disconnect();}},{threshold:.3}).observe(el);
+}
+const h=document.documentElement;
+window.addEventListener('DOMContentLoaded',()=>{
+  lucide.createIcons();
+  initMap();
+  const s1=document.getElementById('st1'),s2=document.getElementById('st2'),s3=document.getElementById('st3');
+  if(s1)onVisible(s1,()=>{animCount(s1,1240,'',1200);animCount(s2,42,'',1200);s3.textContent='100%';});
+});
+</script>
+</body>
+</html>
